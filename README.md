@@ -62,6 +62,15 @@ Demonstração:
 
 <img width="560" height="191" alt="image" src="https://github.com/user-attachments/assets/b679b615-f61b-4694-ba85-ccba8639535a" />
 
+<img width="570" height="514" alt="image" src="https://github.com/user-attachments/assets/d0a51d61-78e8-4373-b03d-0f5544e71bbe" />
+
+<img width="672" height="660" alt="image" src="https://github.com/user-attachments/assets/20b10321-b950-4357-bd2e-563c237294c7" />
+
+<img width="362" height="72" alt="image" src="https://github.com/user-attachments/assets/9f9dfa6a-5aa4-4a4f-b7c1-f1beb916bcd9" />
+
+
+
+
 
 
 
