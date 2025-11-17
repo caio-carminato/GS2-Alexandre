@@ -20,6 +20,7 @@ A proposta consiste em uma simulação de automação IoT voltada para o monitor
 
 A solução demonstra como tecnologias embarcadas podem ser aplicadas para tornar ambientes de trabalho mais eficientes e sustentáveis. Ao acompanhar em tempo real os dados de tensão, corrente e potência, é possível identificar padrões de consumo, propor ajustes e contribuir para práticas mais conscientes no uso da energia elétrica.
 
+
 ## ▶️ Instruções de Execução
 
 Use o menu:
@@ -31,6 +32,7 @@ Use o menu:
 3 → sair
 
 O relatório será salvo automaticamente em um arquivo .txt.
+
 
 ## 🧩 Estrutura de Arquivos e Classes
 
