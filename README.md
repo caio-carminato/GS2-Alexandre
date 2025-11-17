@@ -16,11 +16,6 @@ calcula nota de compatibilidade com cada carreira, identifica lacunas de habilid
 
 O objetivo é conectar programação e automação ao desenvolvimento humano, ajudando pessoas a se prepararem para o trabalho do futuro.
 
-A proposta consiste em uma simulação de automação IoT voltada para o monitoramento de consumo energético, utilizando um ESP32 virtual e display LCD.
-
-A solução demonstra como tecnologias embarcadas podem ser aplicadas para tornar ambientes de trabalho mais eficientes e sustentáveis. Ao acompanhar em tempo real os dados de tensão, corrente e potência, é possível identificar padrões de consumo, propor ajustes e contribuir para práticas mais conscientes no uso da energia elétrica.
-
-
 ## ▶️ Instruções de Execução
 
 Use o menu:
