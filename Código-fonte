@@ -1,0 +1,276 @@
+from typing import Dict, List, Tuple
+import datetime
+
+
+class Competency:
+    """Representa uma competência com nome e nível (0-5)."""
+    def __init__(self, name: str, level: float):
+        self.name = name.lower().strip()
+        self.level = float(level)
+
+    def __repr__(self):
+        return f"{self.name}({self.level})"
+
+
+class Profile:
+    """Perfil profissional: nome e competências (dict nome->nível)."""
+    def __init__(self, name: str):
+        self.name = name
+        self.competencies: Dict[str, float] = {}
+
+    def set_competency(self, comp_name: str, level: float):
+        self.competencies[comp_name.lower().strip()] = float(level)
+
+    def get_level(self, comp_name: str) -> float:
+        return self.competencies.get(comp_name.lower().strip(), 0.0)
+
+    def __repr__(self):
+        comps = ", ".join(f"{k}:{v}" for k, v in self.competencies.items())
+        return f"Profile({self.name}): {comps}"
+
+
+class Career:
+    """Carreira: nome, pesos de competências e níveis esperados."""
+    def __init__(self, title: str, weights: Dict[str, float], expected_levels: Dict[str, float] = None):
+        self.title = title
+        self.weights = {k.lower().strip(): float(v) for k, v in weights.items()}
+        self.expected_levels = {k.lower().strip(): float(v) for k, v in (expected_levels or {}).items()}
+
+    def __repr__(self):
+        return f"Career({self.title})"
+
+
+class Recommender:
+    def __init__(self, careers: List[Career]):
+        self.careers = careers
+
+    def _nota_profile_vs_career(self, profile: Profile, career: Career) -> float:
+        """Calcula nota de compatibilidade (0 a 100)."""
+        nota_bruta = 0.0
+        max_possivel = 0.0
+        for comp, weight in career.weights.items():
+            level = profile.get_level(comp)
+            nota_bruta += level * weight
+            max_possivel += 5 * weight
+        return round((nota_bruta / max_possivel) * 100, 2) if max_possivel > 0 else 0.0
+
+    def _gaps(self, profile: Profile, career: Career) -> List[Tuple[str, float, float]]:
+        gaps = []
+        for comp, weight in career.weights.items():
+            current = profile.get_level(comp)
+            desired = career.expected_levels.get(comp, 3.0)
+            if current < desired:
+                gaps.append((comp, current, desired))
+        gaps.sort(key=lambda x: (x[2] - x[1]), reverse=True)
+        return gaps
+
+    def _suggest_learning(self, comp_name: str, current: float, desired: float) -> List[str]:
+        gap = desired - current
+        if gap <= 0:
+            return ["Manter prática e aplicar em projetos reais."]
+        elif gap <= 1:
+            return ["Estudar tópicos intermediários e praticar com pequenos projetos."]
+        elif gap <= 2:
+            return ["Realizar curso online completo e resolver desafios práticos."]
+        else:
+            return ["Fazer formação completa e aplicar em projetos profissionais."]
+        
+    def recommend(self, profile: Profile, top_n: int = 3):
+        notas = [(career, self._nota_profile_vs_career(profile, career)) for career in self.careers]
+        notas.sort(key=lambda x: x[1], reverse=True)
+
+        recommendations = []
+        for career, nota in notas[:top_n]:
+            gaps = self._gaps(profile, career)
+            gap_details = []
+            for comp, current, desired in gaps:
+                suggestions = self._suggest_learning(comp, current, desired)
+                gap_details.append({
+                    "competency": comp,
+                    "current_level": current,
+                    "desired_level": desired,
+                    "suggestions": suggestions
+                })
+            recommendations.append({
+                "career": career.title,
+                "nota": nota,
+                "gaps": gap_details
+            })
+        return {
+            "profile": profile.name,
+            "ranked_careers": [(c.title, n) for c, n in notas],
+            "top_recommendations": recommendations
+        }
+
+
+def example_data() -> List[Career]:
+    return [
+        Career(
+            "Programador Python",
+            weights={
+                "python": 0.35,
+                "lógica de programação": 0.25,
+                "banco de dados": 0.15,
+                "git": 0.10,
+                "comunicação": 0.15
+            },
+            expected_levels={
+                "python": 4.0,
+                "lógica de programação": 3.5,
+                "banco de dados": 3.0
+            }
+        ),
+        Career(
+            "Programador C",
+            weights={
+                "c": 0.4,
+                "algoritmos": 0.25,
+                "estrutura de dados": 0.2,
+                "sistemas operacionais": 0.1,
+                "colaboração": 0.05  # ✔ corrigido
+            },
+            expected_levels={
+                "c": 4.0,
+                "estrutura de dados": 3.5
+            }
+        ),
+        Career(
+            "Analista de Dados",
+            weights={
+                "python": 0.2,
+                "estatística": 0.25,
+                "excel": 0.15,
+                "sql": 0.2,
+                "visualização de dados": 0.2
+            },
+            expected_levels={
+                "estatística": 3.5,
+                "sql": 3.5,
+                "visualização de dados": 3.0
+            }
+        ),
+        Career(
+            "Especialista em Cibersegurança",
+            weights={
+                "segurança da informação": 0.35,
+                "redes": 0.25,
+                "criptografia": 0.15,
+                "sistemas operacionais": 0.15,
+                "pensamento crítico": 0.10
+            },
+            expected_levels={
+                "segurança da informação": 4.0,
+                "redes": 3.5
+            }
+        )
+    ]
+
+
+def salvar_relatorio(perfil: Profile, resultado: Dict):
+    data = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+    nome_arquivo = f"relatorio_{perfil.name.replace(' ', '_')}_{data}.txt"
+
+    with open(nome_arquivo, "w", encoding="utf-8") as f:
+        f.write(f"Relatório de Recomendações de Carreira\n")
+        f.write(f"Data: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}\n")
+        f.write(f"Perfil: {perfil.name}\n\n")
+
+        f.write("Carreiras ordenadas por nota de compatibilidade:\n")
+        for title, nota in resultado["ranked_careers"]:
+            f.write(f" - {title}: {nota:.2f}\n")
+
+        f.write("\nDetalhes das 3 principais recomendações:\n")
+        for rec in resultado["top_recommendations"]:
+            f.write(f"\nCarreira: {rec['career']} (Nota: {rec['nota']})\n")
+            if not rec["gaps"]:
+                f.write("  - Nenhuma lacuna encontrada, perfil altamente compatível!\n")
+            else:
+                for gap in rec["gaps"]:
+                    f.write(f"  - {gap['competency'].capitalize()}: atual {gap['current_level']} → desejado {gap['desired_level']}\n")
+                    for s in gap["suggestions"]:
+                        f.write(f"     • {s}\n")
+
+    print(f"\nRelatório salvo como: {nome_arquivo}")
+
+
+def menu_principal():
+    print("\n Sistema de Orientação de Carreira ")
+    print("1. Cadastrar novo perfil")
+    print("2. Exibir recomendações")
+    print("3. Sair")
+
+
+def cadastrar_perfil() -> Profile:
+    nome = input("\nDigite o nome do profissional: ").strip()
+    perfil = Profile(nome)
+
+    print("\nInforme a nota (0 a 5) para as competências a seguir:")
+    competencias = [
+        "python", "c", "estatística", "sql", "excel", "visualização de dados",
+        "banco de dados", "segurança da informação", "redes", "criptografia",
+        "sistemas operacionais", "pensamento crítico", "colaboração",
+        "lógica de programação", "git", "comunicação"
+    ]
+
+    for comp in competencias:
+        while True:
+            try:
+                nivel = float(input(f"{comp.capitalize()}: "))
+                if 0 <= nivel <= 5:
+                    perfil.set_competency(comp, nivel)
+                    break
+                else:
+                    print("Digite um valor entre 0 e 5.")
+            except ValueError:
+                print("Entrada inválida. Digite um número.")
+    print("\nPerfil cadastrado com sucesso!")
+    return perfil
+
+
+def exibir_recomendacoes(perfil: Profile, recomendador: Recommender):
+    resultado = recomendador.recommend(perfil, top_n=4)
+    print(f"\n Recomendações para: {resultado['profile']} \n")
+    print("Carreiras ordenadas por nota de compatibilidade:")
+    for title, nota in resultado["ranked_careers"]:
+        print(f" - {title}: {nota:.2f}")
+
+    print("\nDetalhes das 3 principais recomendações:\n")
+    for rec in resultado["top_recommendations"]:
+        print(f"Carreira: {rec['career']}  (Nota: {rec['nota']})")
+        if not rec["gaps"]:
+            print("  - Nenhuma lacuna encontrada, perfil altamente compatível!\n")
+        else:
+            for gap in rec["gaps"]:
+                print(f"  - {gap['competency'].capitalize()}: atual {gap['current_level']} → desejado {gap['desired_level']}")
+                for s in gap["suggestions"]:
+                    print(f"     • {s}")
+            print()
+
+    salvar_relatorio(perfil, resultado)
+
+
+def main():
+    careers = example_data()
+    recomendador = Recommender(careers)
+    perfil = None
+
+    while True:
+        menu_principal()
+        opcao = input("\nEscolha uma opção: ").strip()
+
+        if opcao == "1":
+            perfil = cadastrar_perfil()
+        elif opcao == "2":
+            if perfil:
+                exibir_recomendacoes(perfil, recomendador)
+            else:
+                print("\nNenhum perfil cadastrado. Cadastre um perfil primeiro (opção 1).")
+        elif opcao == "3":
+            print("\nEncerrando o sistema. Até logo!")
+            break
+        else:
+            print("\nOpção inválida. Tente novamente.")
+
+
+if __name__ == "__main__":
+    main()
