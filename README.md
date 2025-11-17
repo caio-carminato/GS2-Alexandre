@@ -58,6 +58,10 @@ salvar_relatorio() — grava as recomendações em um arquivo .txt.
 
 main() — controla o fluxo geral do sistema.
 
+Demonstração:
+
+<img width="560" height="191" alt="image" src="https://github.com/user-attachments/assets/b679b615-f61b-4694-ba85-ccba8639535a" />
+
 
 
 
